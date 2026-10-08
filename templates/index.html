@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grand Stay Hotel | Management & Booking System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <!-- Toast Notification Center -->
+  <div id="toast-container"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="navbar-brand">
+      <span class="brand-icon"></span>
+      <span class="brand-title">Grand Stay Hotel</span>
+      <span class="brand-badge">Admin & Booking Portal</span>
+    </div>
+    <div class="navbar-actions">
+      <button class="btn btn-secondary btn-sm" id="btn-refresh-all">
+         Refresh Data
+      </button>
+      <button class="btn btn-primary btn-sm" id="btn-open-add-room-modal">
+        Add New Room
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- KPI Dashboard Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-info">
+          <h3>Total Rooms</h3>
+          <div class="metric-value" id="stat-total-rooms">0</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-info">
+          <h3>Available Rooms</h3>
+          <div class="metric-value" id="stat-available-rooms">0</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-info">
+          <h3>Booked Rooms</h3>
+          <div class="metric-value" id="stat-booked-rooms">0</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-info">
+          <h3>Active Bookings</h3>
+          <div class="metric-value" id="stat-active-bookings">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Room Search & Date Availability Section -->
+    <section class="section-card">
+      <div class="section-header">
+        <h2> Check Room Availability & Search</h2>
+      </div>
+      <div class="section-body">
+        <form id="search-availability-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="search-check-in">Check-in Date <span class="required">*</span></label>
+              <input type="date" id="search-check-in" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="search-check-out">Check-out Date <span class="required">*</span></label>
+              <input type="date" id="search-check-out" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="search-room-type">Room Type (Optional)</label>
+              <select id="search-room-type" class="form-control">
+                <option value="">All Types</option>
+                <option value="Single">Single</option>
+                <option value="Double">Double</option>
+                <option value="Deluxe">Deluxe</option>
+                <option value="Suite">Suite</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn btn-primary" id="btn-search-availability">
+                Find Available Rooms
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Availability Search Results Container -->
+        <div id="availability-results-container" style="display: none; margin-top: 1.5rem;">
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.05rem;" id="availability-results-heading">Available Rooms</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-clear-search">Clear Search</button>
+          </div>
+          <div id="availability-results-grid" class="available-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two Column Layout: Quick Booking Form + Add Room Form -->
+    <div class="grid-2col">
+      <!-- Create Booking Form -->
+      <section class="section-card">
+        <div class="section-header">
+          <h2> Book a Room</h2>
+        </div>
+        <div class="section-body">
+          <form id="create-booking-form">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="booking-guest-name">Guest Name <span class="required">*</span></label>
+              <input type="text" id="booking-guest-name" class="form-control" placeholder="e.g. Yugal Sonparate" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="booking-guest-email">Guest Email <span class="required">*</span></label>
+              <input type="email" id="booking-guest-email" class="form-control" placeholder="e.g. yugal@example.com" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="booking-room-select">Select Room <span class="required">*</span></label>
+              <select id="booking-room-select" class="form-control" required>
+                <option value="">-- Choose a Room --</option>
+              </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+              <div class="form-group">
+                <label for="booking-check-in">Check-in Date <span class="required">*</span></label>
+                <input type="date" id="booking-check-in" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="booking-check-out">Check-out Date <span class="required">*</span></label>
+                <input type="date" id="booking-check-out" class="form-control" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-submit-booking">
+              Confirm & Book Room
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Add Room Form -->
+      <section class="section-card">
+        <div class="section-header">
+          <h2>➕ Add Hotel Room</h2>
+        </div>
+        <div class="section-body">
+          <form id="create-room-form">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="add-room-number">Room Number <span class="required">*</span></label>
+              <input type="text" id="add-room-number" class="form-control" placeholder="e.g. 501" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="add-room-type">Room Type <span class="required">*</span></label>
+              <select id="add-room-type" class="form-control" required>
+                <option value="Single">Single</option>
+                <option value="Double">Double</option>
+                <option value="Deluxe">Deluxe</option>
+                <option value="Suite">Suite</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="add-room-price">Price Per Night (₹) <span class="required">*</span></label>
+              <input type="number" id="add-room-price" class="form-control" placeholder="e.g. 4200.00" step="0.01" min="1" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label for="add-room-status">Initial Status <span class="required">*</span></label>
+              <select id="add-room-status" class="form-control" required>
+                <option value="AVAILABLE">AVAILABLE</option>
+                <option value="MAINTENANCE">MAINTENANCE</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-submit-room">
+              Add Room
+            </button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- Rooms Table Section -->
+    <section class="section-card">
+      <div class="section-header">
+        <h2>🛏️ Rooms Inventory</h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="text" id="filter-room-input" class="form-control" placeholder="Filter by type/number..." style="width: 220px; padding: 0.4rem 0.75rem;">
+        </div>
+      </div>
+      <div class="section-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="data-table" id="rooms-table">
+            <thead>
+              <tr>
+                <th>Room Number</th>
+                <th>Type</th>
+                <th>Price / Night</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rooms-table-body">
+              <tr>
+                <td colspan="6" class="loading-indicator">
+                  <div class="spinner"></div> Loading hotel rooms...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bookings Table Section -->
+    <section class="section-card">
+      <div class="section-header">
+        <h2>All Bookings</h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <select id="filter-booking-status" class="form-control" style="width: 180px; padding: 0.4rem 0.75rem;">
+            <option value="">All Statuses</option>
+            <option value="CONFIRMED">CONFIRMED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="data-table" id="bookings-table">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookings-table-body">
+              <tr>
+                <td colspan="7" class="loading-indicator">
+                  <div class="spinner"></div> Loading bookings...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Edit Room Modal -->
+  <div class="modal-overlay" id="edit-room-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Edit Room Details</h3>
+        <button class="modal-close-btn" id="btn-close-edit-room">&times;</button>
+      </div>
+      <form id="edit-room-form">
+        <div class="modal-body">
+          <input type="hidden" id="edit-room-id">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="edit-room-number">Room Number <span class="required">*</span></label>
+            <input type="text" id="edit-room-number" class="form-control" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="edit-room-type">Room Type <span class="required">*</span></label>
+            <select id="edit-room-type" class="form-control" required>
+              <option value="Single">Single</option>
+              <option value="Double">Double</option>
+              <option value="Deluxe">Deluxe</option>
+              <option value="Suite">Suite</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="edit-room-price">Price Per Night (₹) <span class="required">*</span></label>
+            <input type="number" id="edit-room-price" class="form-control" step="0.01" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-room-status">Availability Status <span class="required">*</span></label>
+            <select id="edit-room-status" class="form-control" required>
+              <option value="AVAILABLE">AVAILABLE</option>
+              <option value="BOOKED">BOOKED</option>
+              <option value="MAINTENANCE">MAINTENANCE</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit-room">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Booking Confirmation / Pre-fill Modal from Availability Search -->
+  <div class="modal-overlay" id="quick-book-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Book Room</h3>
+        <button class="modal-close-btn" id="btn-close-quick-book">&times;</button>
+      </div>
+      <form id="quick-book-form">
+        <div class="modal-body">
+          <input type="hidden" id="quick-book-room-id">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Selected Room</label>
+            <input type="text" id="quick-book-room-display" class="form-control" disabled style="background-color: #f1f5f9;">
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="quick-guest-name">Guest Name <span class="required">*</span></label>
+            <input type="text" id="quick-guest-name" class="form-control" placeholder="e.g. John Doe" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="quick-guest-email">Guest Email <span class="required">*</span></label>
+            <input type="email" id="quick-guest-email" class="form-control" placeholder="e.g. john@example.com" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="quick-check-in">Check-in <span class="required">*</span></label>
+              <input type="date" id="quick-check-in" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="quick-check-out">Check-out <span class="required">*</span></label>
+              <input type="date" id="quick-check-out" class="form-control" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-quick-book">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
